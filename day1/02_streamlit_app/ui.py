@@ -11,6 +11,20 @@ from metrics import get_metrics_descriptions
 def display_chat_page(pipe):
     """チャットページのUIを表示する"""
     st.subheader("質問を入力してください")
+    col1, col2 = st.columns(2)
+    with col1:
+      on = st.toggle("質問例を表示")
+    with col2:
+      if on:
+        example = st.selectbox(
+            label='質問',
+            options = ("地球温暖化を防ぐにはどうしたらいいですか？", "夏をテーマにした短い詩を書いてください", "ビジネス英語で自己紹介する文章を作ってください"),
+            placeholder="選択してください",
+            index=None,
+            label_visibility="collapsed"
+        )
+        if example is not None:
+          st.session_state.current_question = example
     user_question = st.text_area("質問", key="question_input", height=100, value=st.session_state.get("current_question", ""))
     submit_button = st.button("質問を送信")
 
