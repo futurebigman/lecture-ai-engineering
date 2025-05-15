@@ -6,7 +6,7 @@ import database             # データベースモジュール
 import metrics              # 評価指標モジュール
 import data                 # データモジュール
 import torch
-from transformers import pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from config import MODEL_NAME
 from huggingface_hub import HfFolder
 
@@ -31,19 +31,19 @@ def load_model():
     try:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         st.info(f"Using device: {device}") # 使用デバイスを表示
-        pipe = pipeline(
-            "text-generation",
-            model=MODEL_NAME,
-            model_kwargs={"torch_dtype": torch.bfloat16},
-            device=device
-        )
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        pipe = AutoModelForCausalLM.from_pretrained(
+            MODEL_NAME, 
+            torch_dtype="auto",
+            quantization_config=quant_config
+            )
         st.success(f"モデル '{MODEL_NAME}' の読み込みに成功しました。")
-        return pipe
+        return tokenizer, pipe
     except Exception as e:
         st.error(f"モデル '{MODEL_NAME}' の読み込みに失敗しました: {e}")
         st.error("GPUメモリ不足の可能性があります。不要なプロセスを終了するか、より小さいモデルの使用を検討してください。")
         return None
-pipe = llm.load_model()
+tokenizer, pipe = llm.load_model()
 
 # --- Streamlit アプリケーション ---
 st.title("🤖 Gemma 2 Chatbot with Feedback")
@@ -68,7 +68,7 @@ page = st.sidebar.radio(
 # --- メインコンテンツ ---
 if st.session_state.page == "チャット":
     if pipe:
-        ui.display_chat_page(pipe)
+        ui.display_chat_page(tokenizer, pipe)
     else:
         st.error("チャット機能を利用できません。モデルの読み込みに失敗しました。")
 elif st.session_state.page == "履歴閲覧":
