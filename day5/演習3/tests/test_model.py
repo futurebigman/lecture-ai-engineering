@@ -174,7 +174,7 @@ def test_model_reproducibility(sample_data, preprocessor):
     ), "モデルの予測結果に再現性がありません"
 
 
-def memory_usage_amount(train_model):
+def test_model_memory_usage(train_model):
     """メモリ使用量を検証"""
     model, X_test, y_test = train_model
     # プロセス取得
